@@ -1,5 +1,7 @@
 import random
 
+debug = False
+
 def err():
     print("Invalid input, try again.")
 
@@ -31,7 +33,8 @@ def randomword(): # Return a random word from words.txt if length matches the di
 
 def startgame(): # This is a bit too long but it works for now.
     word = randomword()
-    print(word)
+    if debug: # it's not cheating i swear
+        print(word)
     letters = [{"char": word[i], "guessed": False} for i in range(len(word))]
     wrong = 0
     guesses = []
