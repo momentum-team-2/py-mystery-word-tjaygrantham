@@ -1,6 +1,29 @@
 import random
+import math
 
 debug = False
+
+class Letter:
+
+    def __init__(self, letterstr):
+        self.str = letterstr
+        self.guessed = False
+
+    def __str__(self):
+        return self.str
+
+class Word:
+
+    def __init__(self, wordstr):
+        self.str = wordstr
+        self.length = len(self.str)
+        self.letters = [Letter(self.str[i]) for i in range(self.length)]
+
+    def guessed(self):
+        return True if sum([1 if letter.guessed else 0 for letter in self.letters]) == self.length else False
+
+    def __str__(self):
+        return self.str
 
 def err():
     print("Invalid input, try again.")
@@ -21,13 +44,13 @@ def getdifficulty(): # Let player input the difficulty, catch any invalid input
 
 def randomword(): # Return a random word from words.txt if length matches the difficulty standards
     difficulty = getdifficulty()
-    word = ""
-    maxlength = 6 if difficulty == 1 else 8
+    word = Word("")
+    maxlength = 6 if difficulty == 1 else 8 if difficulty == 2 else math.inf
     minlength = 4 if difficulty == 1 else 6 if difficulty == 2 else 8
     f = open('words.txt', 'r')
     words = f.read().split()
-    while len(word) < minlength or len(word) > maxlength:
-        word = words[random.randint(0, len(words)-1)].lower()
+    while word.length < minlength or word.length > maxlength:
+        word = Word(words[random.randint(0, len(words)-1)].lower())
     f.close()
     return word
 
@@ -35,14 +58,13 @@ def startgame(): # This is a bit too long but it works for now.
     word = randomword()
     if debug: # it's not cheating i swear
         print(word)
-    letters = [{"char": word[i], "guessed": False} for i in range(len(word))]
     wrong = 0
     guesses = []
     while True:
         string = ""
-        for letter in letters:
-            char = letter["char"]
-            if letter["guessed"]:
+        for letter in word.letters:
+            char = letter.str
+            if letter.guessed:
                 string += f" { char } "
             else:
                 string += " _ "
@@ -55,9 +77,9 @@ def startgame(): # This is a bit too long but it works for now.
                 print(f"You've already guessed {guess}, try again.")
                 continue
             guesses.append(guess)
-            for letter in letters:
-                if guess == letter["char"]:
-                    letter["guessed"] = True
+            for letter in word.letters:
+                if guess == letter.str:
+                    letter.guessed = True
                     correct = True
         else:
             err()
@@ -67,21 +89,18 @@ def startgame(): # This is a bit too long but it works for now.
         else:
             print('Incorrect')
             wrong += 1
-        correctcount = 0
-        for letter in letters:
-            if letter["guessed"]:
-                correctcount += 1
-        if correctcount == len(word):
+        if word.guessed():
             print("You won!")
             print(f"Your word was {word}")
-            if input("Would you like to play again? (y/n): ").lower() == "y":
-                startgame()
-            else:
-                exit(1)
-        if wrong == 8:
+            break
+        elif wrong == 8:
             print("Too many wrong letters. Game over!")
             print(f"Your word was {word}")
-            exit(1)
+            break
+    if input("Would you like to play again? (y/n): ").lower() == "y":
+        startgame()
+    else:
+        exit(1)
 
 if __name__ == '__main__':
     startgame()
